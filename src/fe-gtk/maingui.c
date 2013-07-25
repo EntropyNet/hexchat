@@ -2822,12 +2822,13 @@ mg_inputbox_rightclick (GtkEntry *entry, GtkWidget *menu)
 #define SEARCH_CHANGE		1
 #define SEARCH_NEXT			2
 #define SEARCH_PREVIOUS		3
+#define SEARCH_REFRESH		4
 
 static void
 search_handle_event(int search_type, session *sess)
 {
 	textentry *last;
-	const gchar *text;
+	const gchar *text = NULL;
 	gtk_xtext_search_flags flags;
 	GError *err = NULL;
 
@@ -2837,7 +2838,8 @@ search_handle_event(int search_type, session *sess)
 				(prefs.hex_text_search_follow == 1? follow: 0) |
 				(prefs.hex_text_search_regexp == 1? regexp: 0));
 
-	text = gtk_entry_get_text (GTK_ENTRY(sess->gui->shentry));
+	if (search_type != SEARCH_REFRESH)
+		text = gtk_entry_get_text (GTK_ENTRY(sess->gui->shentry));
 	last = gtk_xtext_search (GTK_XTEXT (sess->gui->xtext), text, flags, &err);
 
 	if (err)
@@ -2861,6 +2863,12 @@ search_handle_change(GtkWidget *wid, session *sess)
 	search_handle_event(SEARCH_CHANGE, sess);
 }
 
+static void
+search_handle_refresh(GtkWidget *wid, session *sess)
+{
+	search_handle_event(SEARCH_REFRESH, sess);
+}
+
 void
 mg_search_handle_previous(GtkWidget *wid, session *sess)
 {
@@ -2878,7 +2886,6 @@ search_set_option (GtkToggleButton *but, guint *pref)
 {
 	*pref = gtk_toggle_button_get_active(but);
 	save_config();
-	/* TODO: refresh the search */
 }
 
 void
@@ -2956,6 +2963,7 @@ mg_create_search(session *sess, GtkWidget *box)
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(highlight), prefs.hex_text_search_case_match);
 	gtk_widget_set_can_focus (highlight, FALSE);
 	g_signal_connect (G_OBJECT (highlight), "toggled", G_CALLBACK (search_set_option), &prefs.hex_text_search_highlight_all);
+	g_signal_connect (G_OBJECT (highlight), "toggled", G_CALLBACK (search_handle_refresh), sess);
 	gtk_box_pack_start(GTK_BOX(gui->shbox), highlight, FALSE, FALSE, 0);
 	add_tip (highlight, _("Highlight all occurrences, and underline the current occurrence."));
 
