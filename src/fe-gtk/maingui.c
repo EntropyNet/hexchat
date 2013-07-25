@@ -2826,8 +2826,8 @@ mg_inputbox_rightclick (GtkEntry *entry, GtkWidget *menu)
 static void
 search_handle_event(int search_type, session *sess)
 {
-	static textentry *last;
-	gchar *text;
+	textentry *last;
+	const gchar *text;
 	gtk_xtext_search_flags flags;
 	GError *err = NULL;
 
@@ -2837,7 +2837,7 @@ search_handle_event(int search_type, session *sess)
 				(prefs.hex_text_search_follow == 1? follow: 0) |
 				(prefs.hex_text_search_regexp == 1? regexp: 0));
 
-	text = gtk_editable_get_chars(GTK_EDITABLE(sess->gui->shentry), 0, -1);
+	text = gtk_entry_get_text (GTK_ENTRY(sess->gui->shentry));
 	last = gtk_xtext_search (GTK_XTEXT (sess->gui->xtext), text, flags, &err);
 
 	if (err)
@@ -2856,7 +2856,7 @@ search_handle_event(int search_type, session *sess)
 }
 
 static void
-search_handle_change(GtkEditable *editable, session *sess)
+search_handle_change(GtkWidget *wid, session *sess)
 {
 	search_handle_event(SEARCH_CHANGE, sess);
 }
@@ -2878,6 +2878,7 @@ search_set_option (GtkToggleButton *but, guint *pref)
 {
 	*pref = gtk_toggle_button_get_active(but);
 	save_config();
+	/* TODO: refresh the search */
 }
 
 void
@@ -2921,6 +2922,7 @@ mg_create_search(session *sess, GtkWidget *box)
 	close = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (close), gtk_image_new_from_stock (GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU));
 	gtk_button_set_relief(GTK_BUTTON(close), GTK_RELIEF_NONE);
+	gtk_widget_set_can_focus (close, FALSE);
 	gtk_box_pack_start(GTK_BOX(gui->shbox), close, FALSE, FALSE, 0);
 	g_signal_connect_swapped(G_OBJECT(close), "clicked", G_CALLBACK(mg_search_toggle), sess);
 
@@ -2932,33 +2934,41 @@ mg_create_search(session *sess, GtkWidget *box)
 	gtk_widget_set_size_request (gui->shentry, 180, -1);
 	gui->search_changed_signal = g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(search_handle_change), sess);
 	g_signal_connect (G_OBJECT (entry), "key_press_event", G_CALLBACK (search_handle_esc), sess);
+	g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(mg_search_handle_next), sess);
+	gtk_entry_set_icon_activatable (GTK_ENTRY (entry), GTK_ENTRY_ICON_SECONDARY, FALSE);
+	gtk_entry_set_icon_tooltip_text (GTK_ENTRY (sess->gui->shentry), GTK_ENTRY_ICON_SECONDARY, _("Search hit end or not found."));
 
 	next = gtk_button_new_from_stock(GTK_STOCK_GO_FORWARD);
 	gtk_button_set_label(GTK_BUTTON(next), _("_Next"));
 	gtk_button_set_relief(GTK_BUTTON(next), GTK_RELIEF_NONE);
+	gtk_widget_set_can_focus (next, FALSE);
 	gtk_box_pack_start(GTK_BOX(gui->shbox), next, FALSE, FALSE, 0);
 	g_signal_connect(G_OBJECT(next), "clicked", G_CALLBACK(mg_search_handle_next), sess);
 
 	previous = gtk_button_new_from_stock(GTK_STOCK_GO_BACK);
 	gtk_button_set_label(GTK_BUTTON(previous), _("_Previous"));
 	gtk_button_set_relief(GTK_BUTTON(previous), GTK_RELIEF_NONE);
+	gtk_widget_set_can_focus (previous, FALSE);
 	gtk_box_pack_start(GTK_BOX(gui->shbox), previous, FALSE, FALSE, 0);
 	g_signal_connect(G_OBJECT(previous), "clicked", G_CALLBACK(mg_search_handle_previous), sess);
 
 	highlight = gtk_check_button_new_with_mnemonic (_("_Highlight all"));
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(highlight), prefs.hex_text_search_case_match);
+	gtk_widget_set_can_focus (highlight, FALSE);
 	g_signal_connect (G_OBJECT (highlight), "toggled", G_CALLBACK (search_set_option), &prefs.hex_text_search_highlight_all);
 	gtk_box_pack_start(GTK_BOX(gui->shbox), highlight, FALSE, FALSE, 0);
 	add_tip (highlight, _("Highlight all occurrences, and underline the current occurrence."));
 
 	matchcase = gtk_check_button_new_with_mnemonic (_("_Match case"));
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(matchcase), prefs.hex_text_search_case_match);
+	gtk_widget_set_can_focus (matchcase, FALSE);
 	g_signal_connect (G_OBJECT (matchcase), "toggled", G_CALLBACK (search_set_option), &prefs.hex_text_search_case_match);
 	gtk_box_pack_start(GTK_BOX(gui->shbox), matchcase, FALSE, FALSE, 0);
 	add_tip (matchcase, _("Perform a case-sensitive search."));
 
 	regex = gtk_check_button_new_with_mnemonic (_("_Regex"));
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(regex), prefs.hex_text_search_regexp);
+	gtk_widget_set_can_focus (regex, FALSE);
 	g_signal_connect (G_OBJECT (regex), "toggled", G_CALLBACK (search_set_option), &prefs.hex_text_search_regexp);
 	gtk_box_pack_start(GTK_BOX(gui->shbox), regex, FALSE, FALSE, 0);
 	add_tip (regex, _("Regard search string as a regular expression."));
