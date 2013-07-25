@@ -573,7 +573,6 @@ const struct prefs vars[] =
 	{"text_max_lines", P_OFFINT (hex_text_max_lines), TYPE_INT},
 	{"text_replay", P_OFFINT (hex_text_replay), TYPE_BOOL},
 	{"text_search_case_match", P_OFFINT (hex_text_search_case_match), TYPE_BOOL},
-	{"text_search_backward", P_OFFINT (hex_text_search_backward), TYPE_BOOL},
 	{"text_search_highlight_all", P_OFFINT (hex_text_search_highlight_all), TYPE_BOOL},
 	{"text_search_follow", P_OFFINT (hex_text_search_follow), TYPE_BOOL},
 	{"text_search_regexp", P_OFFINT (hex_text_search_regexp), TYPE_BOOL},

@@ -231,7 +231,6 @@ struct hexchatprefs
 	unsigned int hex_text_indent;
 	unsigned int hex_text_replay;
 	unsigned int hex_text_search_case_match;
-	unsigned int hex_text_search_backward;
 	unsigned int hex_text_search_highlight_all;
 	unsigned int hex_text_search_follow;
 	unsigned int hex_text_search_regexp;
