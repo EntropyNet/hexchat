@@ -2831,9 +2831,14 @@ search_handle_event(int search_type, session *sess)
 	const gchar *text = NULL;
 	gtk_xtext_search_flags flags;
 	GError *err = NULL;
+	gboolean backwards = FALSE;
+
+	/* When just typing show most recent first */
+	if (search_type == SEARCH_PREVIOUS || search_type == SEARCH_CHANGE)
+		backwards = TRUE;
 
 	flags = ((prefs.hex_text_search_case_match == 1? case_match: 0) |
-				(search_type == SEARCH_PREVIOUS? backward: 0) |
+				(backwards? backward: 0) |
 				(prefs.hex_text_search_highlight_all == 1? highlight: 0) |
 				(prefs.hex_text_search_follow == 1? follow: 0) |
 				(prefs.hex_text_search_regexp == 1? regexp: 0));
