@@ -2623,8 +2623,18 @@ mg_create_center (session *sess, session_gui *gui, GtkWidget *box)
 	vbox = gtk_vbox_new (FALSE, 3);
 	gtk_notebook_append_page (GTK_NOTEBOOK (book), vbox, NULL);
 	mg_create_topicbar (sess, vbox);
-	mg_create_textarea (sess, vbox);
-	mg_create_search (sess, vbox);
+
+	if (prefs.hex_gui_search_pos)
+	{
+		mg_create_search (sess, vbox);
+		mg_create_textarea (sess, vbox);
+	}
+	else
+	{
+		mg_create_textarea (sess, vbox);
+		mg_create_search (sess, vbox);
+	}
+
 	mg_create_entry (sess, vbox);
 
 	mg_add_pane_signals (gui);
